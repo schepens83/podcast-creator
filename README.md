@@ -10,6 +10,9 @@ Three small tools for turning books into a personal podcast:
 
 All three are installed by a single `uv tool install .`.
 
+New here? [docs/STATUS.md](docs/STATUS.md) is the taking-over snapshot
+(current state, gotchas); [docs/WHY.md](docs/WHY.md) is the decision log.
+
 ## What the pipeline does
 
 `podcastify book.epub` runs three steps:
@@ -135,6 +138,11 @@ After editing any of the `.py` files, reinstall to pick up changes:
 ```bash
 uv tool install --reinstall --force .
 ```
+
+`--force` alone is **not** enough — uv reuses the cached wheel and your
+edits silently don't land. In Claude Code sessions started from this
+folder, a PostToolUse hook in `.claude/settings.json` runs the reinstall
+automatically after any `.py`/`pyproject.toml` edit.
 
 (`-e` editable installs also work: `uv tool install -e .`.)
 
@@ -274,6 +282,7 @@ Two knobs that matter most for audio quality:
 
 ```
 ├── pyproject.toml                # 3 entry points, deps: openai, requests
+├── pcommon.py                    # shared: secrets (*_FILE), preflight, chain help, slugify
 ├── tts.py                        # tts command
 ├── podcastify.py                 # podcastify command
 ├── publish_to_schepens.py        # publish-to-schepens command
@@ -281,9 +290,15 @@ Two knobs that matter most for audio quality:
 │   ├── summarize-book/SKILL.md   # source -> chaptered SUMMARY.md
 │   └── podcast-summary/SKILL.md  # SUMMARY.md -> spoken monologue + voice rules
 ├── prompts/
-│   └── rewrite_for_voice.md      # standalone voice-rewriting prompt
-├── input/                        # legacy hand-prepped scripts
-└── output/                       # legacy mp3s
+│   ├── rewrite_for_voice.md      # standalone voice-rewriting prompt
+│   └── sympathetic.md            # example --instructions-file voice preset
+├── docs/
+│   ├── STATUS.md                 # taking-over snapshot: state, gotchas
+│   ├── WHY.md                    # decision log
+│   └── tts-walkthrough.md        # Python teaching tour of (an earlier) tts.py
+├── .claude/settings.json         # hook: auto `uv tool install --reinstall --force` on edit
+├── input/                        # legacy hand-prepped scripts (gitignored, local only)
+└── output/                       # legacy mp3s (empty)
 ```
 
 The `input/` and `output/` folders are vestigial — `tts` will still write
@@ -293,7 +308,7 @@ drops files directly in CWD.
 ## Related
 
 A shim at
-`/home/sander/Learning/tinker/openclaw-pi/openclaw-workspace/tools/podcast/upload.py`
+`/home/sander/Tinker/openclaw-pi/openclaw-workspace/tools/podcast/upload.py`
 forwards to the installed `publish-to-schepens` command, so the dobby
 agent's hardcoded `upload.py` references keep working.
 

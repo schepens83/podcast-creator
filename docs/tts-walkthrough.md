@@ -1,5 +1,13 @@
 # A Linear Walkthrough of `tts.py`
 
+> **Note (2026-07):** this walks through an earlier, simpler revision of
+> `tts.py`. The current file additionally imports `pcommon` (secrets +
+> preflight), embeds ID3 metadata via `--title`/`--description`/`--date`,
+> and skips re-rendering when the MP3 is newer than the script (`--force`
+> to override). The core logic explained here — chunk splitting,
+> `render_chunk`, `concat_mp3s`, and the overall control flow — is still
+> accurate. Kept as a Python teaching doc, not as a spec.
+
 This is a top-to-bottom tour of `tts.py`, a small command-line script that turns a text file into an MP3 by calling OpenAI's `gpt-4o-mini-tts` model. It assumes you already program but haven't spent much time in Python.
 
 We'll walk through the file in the order it appears.

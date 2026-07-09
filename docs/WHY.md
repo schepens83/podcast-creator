@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-05-16
+last_updated: 2026-07-09
 ---
 
 # Why
@@ -88,3 +88,44 @@ An earlier version wrote to `./input/<slug>.md` and `./output/<slug>.mp3`.
 The preference was simpler: files go directly in the current working
 directory, no subdirs. This makes `podcastify` useful from any folder —
 run it from the book's folder, the files land there.
+
+### Every stage is idempotent; podcastify resumes from artifacts (June 2026)
+
+The summarize and render stages cost real money and minutes, so a failed
+publish must not force redoing them. Each stage skips work whose output
+already exists: `tts` compares mtimes, the server dedupes uploads by
+audio content hash, and `podcastify --from auto` starts from the
+furthest-along artifact (`<slug>.mp3` → publish only, `<slug>.md` →
+render onward). `--from`/`--to` make the resume point explicit; `--force`
+redoes everything. The artifact files in CWD *are* the pipeline state —
+there is no separate state file.
+
+### Episode metadata rides as ID3 tags on the MP3
+
+`tts` embeds `--title`/`--description`/`--date` as ID3 tags via ffmpeg
+(`-c copy`, no re-encode), and the schepens.cc server reads them with
+ffprobe on import. This makes the MP3 self-describing: the publish stage
+needs no sidecar metadata file, and a bare
+`publish-to-schepens books foo.mp3` does the right thing. CLI flags on
+`publish-to-schepens` still override the tags.
+
+### pcommon.py: shared secrets, preflight, and self-documenting --help (June 2026)
+
+Extracted so all three entry points behave identically in cloud/headless
+runs:
+
+- **`get_secret`** reads each key from the environment with a `*_FILE`
+  fallback (Docker/Kamal mounted-secret convention), so secrets never
+  need to appear in the process environment / `docker inspect`.
+- **`preflight`** fails fast — before any paid API call — naming the
+  missing variable or binary, never its value. `podcastify` preflights
+  only the stages it will actually run.
+- **`CHAIN_HELP`** is appended to every command's `--help` epilog: the
+  chain diagram, the idempotency contract, the secrets, and the `uvx`
+  cloud invocation. The goal is that an unattended agent can discover how
+  to drive the pipeline from `--help` alone.
+
+### Git history is one squashed commit
+
+The repo was committed as a single snapshot (2026-06-26) when it
+stabilized. Decision history lives in this file, not in git archaeology.
