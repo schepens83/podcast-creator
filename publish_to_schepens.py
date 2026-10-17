@@ -30,7 +30,8 @@ import requests
 from pcommon import CHAIN_HELP, get_secret, preflight
 
 OUT_DIR = pathlib.Path("/tmp/podcast-mp3s")
-YT_DLP = pathlib.Path.home() / ".local/bin/yt-dlp"
+_LEGACY_YT_DLP = pathlib.Path.home() / ".local/bin/yt-dlp"
+YT_DLP = str(_LEGACY_YT_DLP) if _LEGACY_YT_DLP.exists() else "yt-dlp"
 
 PODCAST_URL = "https://schepens.cc/podcast/api/episodes"
 EPISODES_PAGE = "https://schepens.cc/podcast/episodes"
@@ -48,7 +49,7 @@ def download_all(urls: list[str]) -> None:
     for url in urls:
         print(f"[download] {url}")
         result = subprocess.run([
-            str(YT_DLP),
+            YT_DLP,
             "-x",
             "--audio-format", "mp3",
             "--audio-quality", "0",
@@ -156,7 +157,7 @@ def main() -> int:
             urls.append(src)
 
     if urls:
-        preflight(binaries=[str(YT_DLP)] if YT_DLP.exists() else ["yt-dlp"])
+        preflight(binaries=[YT_DLP])
 
     print(f"{len(urls)} URL(s), {len(local_files)} local file(s) -> {args.podcast}.")
     OUT_DIR.mkdir(exist_ok=True)
