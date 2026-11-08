@@ -24,7 +24,10 @@ from pathlib import Path
 from pcommon import CHAIN_HELP, preflight, slugify, titleize
 
 DEFAULT_CLAUDE_MODEL = "sonnet"
-DEFAULT_CODEX_MODEL = "gpt-5.5"
+# Codex gets no default: without -m it uses the model in its own config.toml,
+# which is the one its account is known to support. A hard-coded name here went
+# stale when the ChatGPT account stopped accepting it.
+DEFAULT_CODEX_MODEL = None
 
 # Skills are bundled in this repo (skills/<name>/SKILL.md) and inlined into the
 # prompt at runtime, so the pipeline does NOT depend on any skill being
@@ -194,7 +197,7 @@ def main() -> int:
         print("[1/3] summarize -> spoken monologue")
         print(f"      src:   {src}")
         print(f"      out:   {input_md}")
-        print(f"      llm:   {args.llm}  model: {model}")
+        print(f"      llm:   {args.llm}  model: {model or '(codex config default)'}")
         run(build_llm_command(args.llm, build_prompt(src, input_md), src, input_md, model))
         if not input_md.exists() or input_md.stat().st_size == 0:
             print(f"[error] expected {input_md} to exist and be non-empty", file=sys.stderr)

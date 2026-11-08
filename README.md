@@ -90,8 +90,8 @@ and the cloud invocation — so an agent can discover how to use it unaided.
     interactive login), set `ANTHROPIC_API_KEY` (or `ANTHROPIC_API_KEY_FILE`)
     in the environment and the CLI uses it directly.
   - **`codex`** CLI, authenticated. Optional alternative. `podcastify`
-    uses `gpt-5.5` by default when you pass `--llm codex`, unless you
-    override it with `--model`.
+    passes no model with `--llm codex`, so Codex uses the one set in its own
+    `config.toml`; override it with `--model`.
 - **No skill install needed.** The `summarize-book` and `podcast-summary`
   instructions ship in this repo under `skills/` and are inlined into the
   prompt at runtime, so the chosen agent doesn't need them installed and you
@@ -216,7 +216,7 @@ podcastify ~/Downloads/some-book.epub --skip-upload
 podcastify ~/Downloads/some-book.epub --llm codex
 
 # override the LLM model explicitly
-podcastify ~/Downloads/some-book.epub --llm codex --model gpt-5.5
+podcastify ~/Downloads/some-book.epub --llm codex --model <model>
 ```
 
 ### TTS only
